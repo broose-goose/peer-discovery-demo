@@ -40,8 +40,8 @@ pub async fn run_server() -> Result<(), Box<dyn Error>> {
     let tokio_socket = UdpSocket::from_std(socket.into())?;
     let mut server = UdpFramed::new(tokio_socket, ServerHeaderCodec::new());
     while let Some(Ok((_, addr))) = server.next().await {
-        println!("received something");
-        server.send(((), addr)).await?;
+        println!("received something from {addr}");
+        server.send(((), DISCOVERY_ADDRESS.into())).await?;
     }
     return Ok(())
 }
@@ -55,7 +55,10 @@ pub async fn run_client(timeout_in_ms: Option<u64>, iterations: Option<u32>) -> 
     for _ in 0..max_iterations {
         client.send(((), DISCOVERY_ADDRESS.into())).await?;
         match time::timeout(timeout, client.next()).await {
-            Ok(Some(Ok((_, addr)))) => println!("Server responded at {addr}"),
+            Ok(Some(Ok((_, addr)))) => {
+                println!("Server responded at {addr}");
+                return Ok(())
+            },
             _ => println!("Didn't hear back from server, trying again"),
         }
     }
