@@ -2,7 +2,6 @@ use std::fmt::{Display, Formatter};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use tokio_util::bytes::{Buf, BufMut, BytesMut};
 use tokio_util::codec::{Decoder, Encoder};
-use crate::protocol::MessageType::{AnnounceServer, FindServer};
 
 #[derive(Clone, Copy, Debug, IntoPrimitive, TryFromPrimitive)]
 #[repr(i32)]
@@ -28,7 +27,7 @@ impl Header {
 
 #[cfg(test)]
 mod tests {
-    use crate::protocol::{Header, MessageType};
+    use crate::peer_discovery::protocol::{MessageType, Header};
 
     #[test]
     fn i_know_how_packing_works() {
@@ -68,7 +67,7 @@ impl Encoder<()> for ServerHeaderCodec {
     type Error = ProtocolError;
     fn encode(&mut self, _event: (), dst: &mut BytesMut) -> Result<(), Self::Error> {
         dst.reserve(4);
-        dst.put_i32(AnnounceServer.into());
+        dst.put_i32(MessageType::AnnounceServer.into());
         Ok(())
     }
 }
@@ -86,7 +85,7 @@ impl Decoder for ServerHeaderCodec {
             return Ok(None)
         }
         return match src.get_i32().try_into() {
-            Ok(message_type @ FindServer) => Ok(Some(Header::new(message_type))),
+            Ok(message_type @ MessageType::FindServer) => Ok(Some(Header::new(message_type))),
             _ => Ok(None)
         }
     }
@@ -104,7 +103,7 @@ impl Encoder<()> for ClientHeaderCodec {
     type Error = ProtocolError;
     fn encode(&mut self, _event: (), dst: &mut BytesMut) -> Result<(), Self::Error> {
         dst.reserve(4);
-        dst.put_i32(FindServer.into());
+        dst.put_i32(MessageType::FindServer.into());
         Ok(())
     }
 }
@@ -122,7 +121,7 @@ impl Decoder for ClientHeaderCodec {
             return Ok(None)
         }
         return match src.get_i32().try_into() {
-            Ok(message_type @ AnnounceServer) => Ok(Some(Header::new(message_type))),
+            Ok(message_type @ MessageType::AnnounceServer) => Ok(Some(Header::new(message_type))),
             _ => Ok(None)
         }
     }

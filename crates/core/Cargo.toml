@@ -9,6 +9,9 @@ socket2 = { version = "0.5.5" }
 tokio-util = {  version = "0.7.0", features = ["full"] }
 tokio-stream = { version = "0.1.14" }
 futures-util  = { version = "0.3.30", features = ["sink"] }
+ctrlc = { version = "3.4.2", features = ["termination"] }
+crossbeam-channel = { version = "0.5.11" }
+dashmap = { version = "5.5.3" }
 
 # workspace crates
 tokio.workspace = true
